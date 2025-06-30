@@ -4,6 +4,7 @@ go 1.24.3
 
 require (
 	github.com/IBM/sarama v1.45.2
+	github.com/sirupsen/logrus v1.9.3
 	github.com/xdg/scram v1.0.5
 )
 
@@ -27,5 +28,6 @@ require (
 	github.com/xdg/stringprep v1.0.3 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.25.0 // indirect
 )

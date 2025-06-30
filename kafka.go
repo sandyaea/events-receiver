@@ -2,13 +2,11 @@ package main
 
 import (
       "fmt"
+      "io/ioutil"
+      "github.com/IBM/sarama"
+      "strings"
       "crypto/tls"
       "crypto/x509"
-      "io/ioutil"
-      "os"
-      "strings"
-
-      "github.com/IBM/sarama"
 )
 
 type KProducer struct {
@@ -56,8 +54,7 @@ func NewKProducer(opts KProducerOpts) (*KProducer, error) {
 
       kp.producer, err = sarama.NewSyncProducer(splitBrokers, conf)
       if err != nil {
-              fmt.Println("Couldn't create producer: ", err.Error())
-              os.Exit(0)
+              return nil, err
       }
 
       return kp, nil
