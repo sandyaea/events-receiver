@@ -3,6 +3,7 @@ package main
 import (
     "fmt"
     "html"
+    "io"
     "encoding/json"
     log "github.com/sirupsen/logrus"
     "net/http"
@@ -46,32 +47,37 @@ func main() {
 
     // Setup http server
     http.HandleFunc("/events", handleEvent)
+    http.HandleFunc("/_health", handleHealth)
     // Run http server
     log.Fatal(http.ListenAndServe(listenAddr, nil))
 
 }
 
-func handleEvent(w http.ResponseWriter, r *http.Request) {
-    var err error
-    var e Event
+func handleHealth(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusOK)
+}
 
-    decoder := json.NewDecoder(r.Body)
-    err = decoder.Decode(&e)
+func handleEvent(w http.ResponseWriter, r *http.Request) {
+    bodyBytes, err := io.ReadAll(r.Body)
+    if err != nil {
+        log.Fatal(err)
+        http.Error(w, "failed to read body", http.StatusBadRequest)
+        return
+    }
+    //log.Println(bodyBytes)
+
+    var e Event
+    err = json.Unmarshal(bodyBytes, &e)
     if err != nil {
         log.Error(err)
         http.Error(w, err.Error(), http.StatusBadRequest)
         return
     }
-    //log.Println(e)
-    data, err := json.Marshal(e)
-    if err != nil {
-        log.Error(err)
-        http.Error(w, err.Error(), http.StatusBadRequest)
-    }
-    log.Println(string(data))
+    log.Println(e)
+
 /*
     //err := Producer.Publish("test message", topic)
-    err = Producer.Publish(string(data), topic)
+    err = Producer.Publish(string(bodyBytes), topic)
     if err != nil {
         log.Errorf("Error publish: %s", err)
         http.Error(w, err.Error(), http.StatusInternalServerError)
