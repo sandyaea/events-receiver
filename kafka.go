@@ -11,13 +11,20 @@ import (
       "github.com/IBM/sarama"
 )
 
+type KProducer struct {
+    producer sarama.SyncProducer
+}
+
 type KProducerOpts struct {
     Brokers string
     Username string
     Password string
 }
 
-func NewKProducer(opts KProducerOpts) (*sarama.SyncProducer, error) {
+func NewKProducer(opts KProducerOpts) (*KProducer, error) {
+      var err error
+      kp := &KProducer{}
+
       splitBrokers := strings.Split(opts.Brokers, ",")
 
       conf := sarama.NewConfig()
@@ -47,11 +54,28 @@ func NewKProducer(opts KProducerOpts) (*sarama.SyncProducer, error) {
         RootCAs: certs,
       }
 
-      producer, err := sarama.NewSyncProducer(splitBrokers, conf)
+      kp.producer, err = sarama.NewSyncProducer(splitBrokers, conf)
       if err != nil {
               fmt.Println("Couldn't create producer: ", err.Error())
               os.Exit(0)
       }
 
-      return &producer, nil
+      return kp, nil
+}
+
+func (kp *KProducer) Publish(message string, topic string) error {
+  // Publish sync
+  msg := &sarama.ProducerMessage {
+      Topic: topic,
+      Value: sarama.StringEncoder(message),
+  }
+  p, o, err := kp.producer.SendMessage(msg)
+  if err != nil {
+      fmt.Println("Error publish: ", err.Error())
+  }
+
+  fmt.Println("Partition: ", p)
+  fmt.Println("Offset: ", o)
+
+  return nil
 }
