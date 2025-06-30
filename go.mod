@@ -1,4 +1,4 @@
-module event-receiver
+module events-receiver
 
 go 1.24.4
 

@@ -1,0 +1,7 @@
+{
+    "brokers": "rc1a-mif94badmu7ja5fa.mdb.yandexcloud.net:9091,rc1b-arkueklbpc4nt0cg.mdb.yandexcloud.net:9091,rc1d-qai2217gout4kdbf.mdb.yandexcloud.net:9091",
+    "username": "writer",
+    "password": "12345678",
+    "topic": "events",
+    "listenAddr": ":9091"
+}
