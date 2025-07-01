@@ -12,16 +12,18 @@ import (
 )
 
 type Config struct {
-	Brokers    string `json:"brokers"`
-	Username   string `json:"username"`
-	Password   string `json:"password"`
-	Topic      string `json:"topic"`
-	ListenAddr string `json:"listenAddr"`
+	Brokers         string `json:"brokers"`
+	Username        string `json:"username"`
+	Password        string `json:"password"`
+	Topic           string `json:"topic"`
+	ListenAddr      string `json:"listenAddr"`
+	KafkaSimulation bool   `json:"kafkasimulation"`
 }
 
 var (
-	Producer *KProducer
-	topic    string
+	Producer        *KProducer
+	topic           string
+	kafkaSimulation bool
 )
 
 type Event struct {
@@ -62,18 +64,24 @@ func handleEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(e)
 
-	err = Producer.Publish(string(bodyBytes), topic)
-	if err != nil {
-		log.Errorf("Error publish: %s", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if !kafkaSimulation {
+		err = Producer.Publish(string(bodyBytes), topic)
+		if err != nil {
+			log.Errorf("Error publish: %s", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte(`{"status": "ok"}`))
 
 	fmt.Fprintf(w, "Hello, %q\n", html.EscapeString(r.URL.Path))
-	fmt.Println("Publish")
+	if !kafkaSimulation {
+		fmt.Println("Publish")
+	} else {
+		fmt.Println("No publish")
+	}
 }
 
 func main() {
@@ -86,15 +94,18 @@ func main() {
 	fmt.Println("Topic:", config.Topic)
 	fmt.Println("ListenAddr:", config.ListenAddr)
 	topic = config.Topic
+	kafkaSimulation = config.KafkaSimulation
 
 	// Connect to Kafka
-	Producer, err = NewKProducer(KProducerOpts{
-		Brokers:  config.Brokers,
-		Username: config.Username,
-		Password: config.Password,
-	})
-	if err != nil {
-		log.Fatal(err)
+	if !kafkaSimulation {
+		Producer, err = NewKProducer(KProducerOpts{
+			Brokers:  config.Brokers,
+			Username: config.Username,
+			Password: config.Password,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	// Setup http server

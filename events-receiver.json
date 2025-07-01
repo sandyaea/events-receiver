@@ -3,5 +3,6 @@
     "username": "writer",
     "password": "12345678",
     "topic": "events",
-    "listenAddr": ":9091"
+    "listenAddr": ":9091",
+    "kafkasimulation": false
 }
